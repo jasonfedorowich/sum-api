@@ -2,6 +2,7 @@
 import com.proto.calc.*;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import server.CalculatorService;
 
@@ -85,6 +86,19 @@ public class ClientTest {
         request.onCompleted();
         latch.await(10L, TimeUnit.SECONDS);
     }
+
+    private static void squareErrorCall(ManagedChannel channel){
+        CalculatorServiceGrpc.CalculatorServiceBlockingStub stub = CalculatorServiceGrpc.newBlockingStub(channel);
+
+        try{
+            stub.squareRoot(SquareRootRequest.newBuilder().setNumber(-1).build());
+        }catch (StatusRuntimeException e){
+            System.out.println("Got an exception!");
+            e.printStackTrace();
+
+        }
+
+    }
     private static void streamMaximum(StreamObserver<FindMaximumRequest> requestStreamObserver, int number){
         requestStreamObserver.onNext(FindMaximumRequest.newBuilder().setNumber(number).build());
     }
@@ -92,9 +106,10 @@ public class ClientTest {
         ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 5555)
                 .usePlaintext()
                 .build();
-       testUnary(channel);
-       testClientStreaming(channel);
-       testBiDiStreaming(channel);
+      // testUnary(channel);
+      // testClientStreaming(channel);
+      // testBiDiStreaming(channel);
+       squareErrorCall(channel);
        channel.shutdown();
 
     }

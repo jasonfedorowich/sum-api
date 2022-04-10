@@ -2,6 +2,7 @@ package server;
 
 
 import com.proto.calc.*;
+import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
 
 public class CalculatorService extends CalculatorServiceGrpc.CalculatorServiceImplBase {
@@ -81,5 +82,18 @@ public class CalculatorService extends CalculatorServiceGrpc.CalculatorServiceIm
         };
 
         return requestStreamObserver;
+    }
+
+    @Override
+    public void squareRoot(SquareRootRequest request, StreamObserver<SquareRootResponse> responseObserver) {
+        if(request.getNumber() < 0){
+            responseObserver.onError(Status.INVALID_ARGUMENT
+                            .withDescription("Number must be positive")
+                            .asRuntimeException());
+        }else{
+            responseObserver.onNext(SquareRootResponse.newBuilder()
+                    .setNumber(Math.sqrt(request.getNumber())).build());
+            responseObserver.onCompleted();
+        }
     }
 }
