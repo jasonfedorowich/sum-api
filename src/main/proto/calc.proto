@@ -19,9 +19,16 @@ message AverageRequest {
 message AverageResponse{
   double average = 1;
 }
+
+message FindMaximumRequest{
+  int32 number = 1;
+}
+message FindMaximumResponse{
+  int32 maximum = 1;
+}
 service CalculatorService{
   rpc sum(SumRequest) returns (SumResponse) {};
   rpc average(stream AverageRequest) returns (AverageResponse) {};
-
+  rpc maximum(stream FindMaximumRequest) returns (stream FindMaximumResponse) {};
 
 }

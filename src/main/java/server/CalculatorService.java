@@ -50,4 +50,36 @@ public class CalculatorService extends CalculatorServiceGrpc.CalculatorServiceIm
 
 
     }
+
+    @Override
+    public StreamObserver<FindMaximumRequest> maximum(StreamObserver<FindMaximumResponse> responseObserver) {
+        StreamObserver<FindMaximumRequest> requestStreamObserver = new StreamObserver<>() {
+            private int maxi = Integer.MIN_VALUE;
+
+            @Override
+            public void onNext(FindMaximumRequest value) {
+                System.out.println("Message recieved!");
+                maxi = Math.max(maxi, value.getNumber());
+                FindMaximumResponse response = FindMaximumResponse
+                        .newBuilder()
+                                .setMaximum(maxi)
+                        .build();
+                responseObserver.onNext(response);
+
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                System.out.println(t.getMessage());
+
+            }
+
+            @Override
+            public void onCompleted() {
+                responseObserver.onCompleted();
+            }
+        };
+
+        return requestStreamObserver;
+    }
 }

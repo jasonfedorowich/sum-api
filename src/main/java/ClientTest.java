@@ -54,12 +54,47 @@ public class ClientTest {
                 .setNumber(number).build());
     }
 
+    private static void testBiDiStreaming(ManagedChannel channel) throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        CalculatorServiceGrpc.CalculatorServiceStub stub = CalculatorServiceGrpc.newStub(channel);
+
+        StreamObserver<FindMaximumRequest> request = stub.maximum(new StreamObserver<>() {
+            @Override
+            public void onNext(FindMaximumResponse value) {
+                System.out.println(value.getMaximum());
+            }
+
+            @Override
+            public void onError(Throwable t) {
+
+            }
+
+            @Override
+            public void onCompleted() {
+                latch.countDown();
+                System.out.println("Completed!");
+
+            }
+        });
+
+        int[] numbers = {1, 2, 7, 90, 6000, 10, 100};
+        for (int number : numbers) {
+
+            streamMaximum(request, number);
+        }
+        request.onCompleted();
+        latch.await(10L, TimeUnit.SECONDS);
+    }
+    private static void streamMaximum(StreamObserver<FindMaximumRequest> requestStreamObserver, int number){
+        requestStreamObserver.onNext(FindMaximumRequest.newBuilder().setNumber(number).build());
+    }
     public static void main(String[] args) throws InterruptedException {
         ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 5555)
                 .usePlaintext()
                 .build();
        testUnary(channel);
        testClientStreaming(channel);
+       testBiDiStreaming(channel);
        channel.shutdown();
 
     }
